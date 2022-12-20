@@ -276,6 +276,7 @@ int mbox_open(void) {
         perror("Failed to create mailbox device\n");
         return -1;
     }
+   printf("Filename %s\n", filename);
     file_desc = open(filename, 0);
     if (file_desc < 0) {
         perror("Can't open device file\n");

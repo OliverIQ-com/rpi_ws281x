@@ -30,7 +30,6 @@
 #ifndef __CLK_H__
 #define __CLK_H__
 
-#include <stdint.h>
 
 typedef struct {
     uint32_t ctl;

@@ -57,21 +57,23 @@ static char VERSION[] = "XX.YY.ZZ";
 
 // defaults for cmdline options
 #define TARGET_FREQ             WS2811_TARGET_FREQ
-#define GPIO_PIN                18
+#define GPIO_PIN                10
 #define DMA                     10
-//#define STRIP_TYPE            WS2811_STRIP_RGB		// WS2812/SK6812RGB integrated chip+leds
-#define STRIP_TYPE              WS2811_STRIP_GBR		// WS2812/SK6812RGB integrated chip+leds
-//#define STRIP_TYPE            SK6812_STRIP_RGBW		// SK6812RGBW (NOT SK6812RGB)
+#define STRIP_TYPE              WS2811_STRIP_RGB        // WS2812/SK6812RGB integrated chip+leds
+//#define STRIP_TYPE            WS2811_STRIP_GBR        // WS2812/SK6812RGB integrated chip+leds
+//#define STRIP_TYPE            WS2811_STRIP_GRBW       // WS2812/SK6812RGB integrated chip+leds
+//#define STRIP_TYPE            SK6812_STRIP_RGBW       // SK6812RGBW (NOT SK6812RGB)
 
 #define WIDTH                   8
-#define HEIGHT                  8
+#define HEIGHT                  1
 #define LED_COUNT               (WIDTH * HEIGHT)
+#define BRIGHTNESS              128
 
 int width = WIDTH;
 int height = HEIGHT;
 int led_count = LED_COUNT;
 
-int clear_on_exit = 0;
+int clear_on_exit = 1;			
 
 ws2811_t ledstring =
 {
@@ -82,16 +84,16 @@ ws2811_t ledstring =
         [0] =
         {
             .gpionum = GPIO_PIN,
-            .invert = 0,
             .count = LED_COUNT,
+            .invert = 0,
+            .brightness = BRIGHTNESS,
             .strip_type = STRIP_TYPE,
-            .brightness = 255,
         },
         [1] =
         {
             .gpionum = 0,
-            .invert = 0,
             .count = 0,
+            .invert = 0,
             .brightness = 0,
         },
     },
@@ -145,6 +147,8 @@ void matrix_clear(void)
 int dotspos[] = { 0, 1, 2, 3, 4, 5, 6, 7 };
 ws2811_led_t dotcolors[] =
 {
+    0x00000020,  // blue
+    0x00202000,  // yellow
     0x00200000,  // red
     0x00201000,  // orange
     0x00202000,  // yellow
@@ -165,10 +169,9 @@ ws2811_led_t dotcolors_rgbw[] =
     0x10000020,  // blue + W
     0x00101010,  // white
     0x10101010,  // white + W
-
 };
 
-void matrix_bottom(void)
+void matrix_rainbow(void)
 {
     int i;
 
@@ -393,7 +396,7 @@ int main(int argc, char *argv[])
     while (running)
     {
         matrix_raise();
-        matrix_bottom();
+        matrix_rainbow();
         matrix_render();
 
         if ((ret = ws2811_render(&ledstring)) != WS2811_SUCCESS)

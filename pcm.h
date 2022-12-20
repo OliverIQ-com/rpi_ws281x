@@ -31,7 +31,6 @@
 #ifndef __PCM_H__
 #define __PCM_H__
 
-#include <stdint.h>
 
 /*
  *

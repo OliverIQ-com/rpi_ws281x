@@ -41,7 +41,7 @@
 #include <linux/types.h>
 #include <linux/spi/spidev.h>
 #include <time.h>
-#include <math.h>
+
 #include "mailbox.h"
 #include "clk.h"
 #include "gpio.h"
@@ -626,12 +626,12 @@ void ws2811_cleanup(ws2811_t *ws2811)
 
     for (chan = 0; chan < RPI_PWM_CHANNELS; chan++)
     {
-        if (ws2811->channel[chan].leds)
+        if (ws2811->channel && ws2811->channel[chan].leds)
         {
             free(ws2811->channel[chan].leds);
         }
         ws2811->channel[chan].leds = NULL;
-        if (ws2811->channel[chan].gamma)
+        if (ws2811->channel && ws2811->channel[chan].gamma)
         {
             free(ws2811->channel[chan].gamma);
         }
@@ -1196,10 +1196,15 @@ ws2811_return_t  ws2811_render(ws2811_t *ws2811)
                         if ((driver_mode != PWM) && channel->invert) symbol = SYMBOL_HIGH_INV;
                     }
 
+                    // first byte has to be zero before color bgr for spi
+                    volatile uint8_t  *byteptr = &pxl_raw[0];    // SPI
+                    *byteptr = 0;
+
                     for (l = 2; l >= 0; l--)               // Symbol
                     {
                         uint32_t *wordptr = &((uint32_t *)pxl_raw)[wordpos];   // PWM & PCM
-                        volatile uint8_t  *byteptr = &pxl_raw[bytepos];    // SPI
+                        //volatile uint8_t  *byteptr = &pxl_raw[bytepos];    // SPI
+                        volatile uint8_t  *byteptr = &pxl_raw[bytepos+1];    // SPI
 
                         if (driver_mode == SPI)
                         {
@@ -1281,25 +1286,4 @@ const char * ws2811_get_return_t_str(const ws2811_return_t state)
     }
 
     return "";
-}
-
-
-void ws2811_set_custom_gamma_factor(ws2811_t *ws2811, double gamma_factor)
-{
-    int chan, counter;
-    for (chan = 0; chan < RPI_PWM_CHANNELS; chan++)
-    {
-        ws2811_channel_t *channel = &ws2811->channel[chan];
-
-        if (channel->gamma)
-        {
-          for(counter = 0; counter < 256; counter++)
-          {
-
-             channel->gamma[counter] = (gamma_factor > 0)? (int)(pow((float)counter / (float)255.00, gamma_factor) * 255.00 + 0.5) : counter;
-
-          }
-        }
-
-    }
 }
